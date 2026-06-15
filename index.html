@@ -1,1 +1,1109 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SGT - Sistema de Tesis INFOCAL</title>
+    <!-- Iconos Phosphor (CDN) -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <style>
+        :root {
+            --primary: #0056b3;
+            --primary-dark: #004494;
+            --secondary: #64748b;
+            --bg-light: #f1f5f9;
+            --white: #ffffff;
+            --text-dark: #0f172a;
+            --text-light: #64748b;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --border-radius: 8px;
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        }
 
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+
+        body {
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* --- LOGIN SCREEN --- */
+        #login-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, var(--bg-light) 0%, #e2e8f0 100%);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-card {
+            background: var(--white);
+            padding: 2.5rem;
+            border-radius: var(--border-radius);
+            box-shadow: 0 10px 25px -5px rgb(0 0 0 / 0.1);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .login-logo {
+            height: 80px;
+            margin-bottom: 1.5rem;
+        }
+
+        /* --- APP CONTAINER --- */
+        #app-container { display: none; width: 100%; }
+
+        /* --- Sidebar --- */
+        .sidebar {
+            width: 280px;
+            background-color: var(--white);
+            border-right: 1px solid #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100%;
+            z-index: 10;
+            transition: transform 0.3s ease;
+        }
+
+        .brand {
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            border-bottom: 1px solid #e2e8f0;
+            background: white;
+        }
+
+        .brand img { height: 50px; width: auto; object-fit: contain; }
+
+        .brand-text { display: flex; flex-direction: column; text-align: left; }
+        .brand-text h2 { font-size: 1.1rem; font-weight: 800; color: var(--primary); line-height: 1; margin-bottom: 4px; }
+        .brand-text span { font-size: 0.75rem; color: var(--text-light); font-weight: 500; }
+
+        .nav-links { list-style: none; padding: 1rem; flex: 1; }
+        .nav-item { margin-bottom: 0.5rem; }
+        
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            text-decoration: none;
+            color: var(--text-light);
+            border-radius: var(--border-radius);
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .nav-link:hover, .nav-link.active { background-color: #eff6ff; color: var(--primary); font-weight: 600; }
+        
+        .user-info-section {
+            padding: 1rem;
+            border-top: 1px solid #e2e8f0;
+            background: #f8fafc;
+        }
+        .user-role-badge {
+            font-size: 0.7rem;
+            background: var(--primary);
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            text-transform: uppercase;
+        }
+
+        /* --- Main Content --- */
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 2rem;
+            max-width: 1400px;
+        }
+
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+        h1 { font-size: 1.75rem; color: var(--text-dark); }
+
+        /* --- Sections & Cards --- */
+        .section { display: none; animation: fadeIn 0.3s ease; }
+        .section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .card {
+            background: var(--white);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+        .stat-card { background: var(--white); padding: 1.5rem; border-radius: var(--border-radius); box-shadow: var(--shadow); display: flex; align-items: center; gap: 1rem; }
+
+        /* --- Forms --- */
+        .form-group { margin-bottom: 1rem; }
+        label { display: block; margin-bottom: 0.5rem; font-weight: 500; font-size: 0.9rem; }
+        input, select, textarea {
+            width: 100%; padding: 0.75rem; border: 1px solid #cbd5e1; border-radius: var(--border-radius); font-size: 1rem;
+        }
+        button {
+            cursor: pointer; padding: 0.75rem 1.5rem; border: none; border-radius: var(--border-radius); font-weight: 600;
+            display: inline-flex; align-items: center; gap: 0.5rem;
+        }
+        .btn-primary { background-color: var(--primary); color: var(--white); }
+        .btn-secondary { background-color: var(--white); border: 1px solid #cbd5e1; color: var(--text-dark); }
+        .btn-sm { padding: 0.4rem 0.8rem; font-size: 0.85rem; }
+        .btn-danger { background-color: #fee2e2; color: var(--danger); }
+        .btn-danger:hover { background-color: #fecaca; }
+
+        /* --- Tables --- */
+        .table-container { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        th, td { text-align: left; padding: 1rem; border-bottom: 1px solid #e2e8f0; }
+        th { background-color: #f8fafc; font-weight: 600; color: var(--text-light); }
+        
+        .status-badge { padding: 0.25rem 0.75rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600; }
+        .status-active { background-color: #dbeafe; color: var(--primary); }
+        .status-pending { background-color: #fef3c7; color: var(--warning); }
+        .status-completed { background-color: #d1fae5; color: var(--success); }
+
+        /* --- Checklist --- */
+        .checklist-container { margin-top: 1rem; border: 1px solid #e2e8f0; border-radius: var(--border-radius); padding: 1rem; max-height: 400px; overflow-y: auto; background: #f8fafc; }
+        .checklist-item { display: flex; align-items: flex-start; padding: 0.5rem 0; border-bottom: 1px solid #e2e8f0; }
+        .checklist-item input[type="checkbox"] { width: 18px; height: 18px; margin-top: 3px; margin-right: 10px; }
+        .checklist-label { font-size: 0.9rem; color: var(--text-dark); }
+        .checklist-item.checked .checklist-label { text-decoration: line-through; color: var(--text-light); }
+
+        /* --- Modals --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5);
+            display: flex; align-items: center; justify-content: center; z-index: 100;
+            opacity: 0; pointer-events: none; transition: opacity 0.2s;
+        }
+        .modal-overlay.open { opacity: 1; pointer-events: all; }
+        .modal {
+            background: var(--white); width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto;
+            padding: 2rem; border-radius: var(--border-radius); transform: translateY(20px); transition: transform 0.2s;
+        }
+        .modal.large { max-width: 800px; }
+        .modal-overlay.open .modal { transform: translateY(0); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+        .close-modal { background: none; border: none; font-size: 1.5rem; color: var(--text-light); cursor: pointer; padding: 0; }
+        .grades-grid { display: grid; grid-template-columns: 2fr 1fr 1.5fr; gap: 1rem; align-items: center; margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid #f1f5f9; }
+
+        /* --- Toast --- */
+        .toast-container { position: fixed; bottom: 2rem; right: 2rem; z-index: 200; display: flex; flex-direction: column; gap: 1rem; }
+        .toast { padding: 1rem 1.5rem; background: var(--white); border-left: 4px solid var(--primary); box-shadow: var(--shadow); border-radius: 4px; display: flex; align-items: center; gap: 1rem; animation: slideIn 0.3s ease; min-width: 300px; }
+        .toast.success { border-color: var(--success); }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+        /* --- Print --- */
+        #print-area { display: none; }
+        @media print {
+            .sidebar, header, .no-print, .modal-overlay, .toast-container, .btn-sm { display: none !important; }
+            .main-content { margin: 0; padding: 0; }
+            .section { display: none !important; }
+            #print-area { display: block !important; background: white; padding: 1cm; color: black; }
+            .report-header { text-align: center; margin-bottom: 2rem; border-bottom: 2px solid #000; padding-bottom: 1rem; }
+            .report-header img { height: 80px; margin-bottom: 1rem; }
+            .report-student-info { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem; font-size: 12pt; }
+            .report-detail-table { width: 100%; border-collapse: collapse; margin-bottom: 2rem; font-size: 10pt; }
+            .report-detail-table th, .report-detail-table td { border: 1px solid #000; padding: 0.5rem; text-align: center; }
+            .report-detail-table td:first-child { text-align: left; }
+            .report-summary { margin-top: 2rem; text-align: right; font-size: 12pt; font-weight: bold; }
+            .report-signatures { margin-top: 4rem; display: flex; justify-content: space-around; }
+            .signature-line { border-top: 1px solid #000; width: 200px; text-align: center; padding-top: 0.5rem; }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.active { transform: translateX(0); }
+            .main-content { margin-left: 0; }
+            .mobile-menu-btn { display: block; }
+            .grades-grid { grid-template-columns: 1fr; gap: 0.5rem; border-bottom: 2px solid #f1f5f9; }
+            .card-header { flex-direction: column; gap: 1rem; align-items: stretch; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- PANTALLA DE LOGIN -->
+    <div id="login-screen">
+        <div class="login-card">
+            <img src="https://z-cdn-media.chatglm.cn/files/c9dda60d-ebbc-4480-8975-626f91b2ec4e.png?auth_key=1881490887-54925998dc654c3291debbf51122a335-0-2577184c1e385f19566fb84d8ba044e3" alt="Logo INFOCAL" class="login-logo">
+            <h2 style="margin-bottom: 0.5rem; color: var(--primary);">Acceso al Sistema</h2>
+            <p style="margin-bottom: 2rem; color: var(--text-light); font-size: 0.9rem;">Gestión de Tesis y Grados</p>
+            
+            <form onsubmit="handleLogin(event)">
+                <div class="form-group" style="text-align: left;">
+                    <label>Usuario</label>
+                    <input type="text" id="login-user" required placeholder="Ej. admin">
+                </div>
+                <div class="form-group" style="text-align: left;">
+                    <label>Contraseña</label>
+                    <input type="password" id="login-pass" required placeholder="••••••••">
+                </div>
+                <button type="submit" class="btn-primary" style="width: 100%; justify-content: center;">
+                    Ingresar
+                </button>
+            </form>
+            <p style="margin-top: 1rem; font-size: 0.8rem; color: #94a3b8;">admin / ariel%10</p>
+        </div>
+    </div>
+
+    <!-- CONTENEDOR PRINCIPAL DE LA APP (Oculto hasta login) -->
+    <div id="app-container">
+        <!-- Navegación Lateral -->
+        <nav class="sidebar" id="sidebar">
+            <div class="brand">
+                <img src="https://z-cdn-media.chatglm.cn/files/c9dda60d-ebbc-4480-8975-626f91b2ec4e.png?auth_key=1881490887-54925998dc654c3291debbf51122a335-0-2577184c1e385f19566fb84d8ba044e3" alt="Logo INFOCAL">
+                <div class="brand-text">
+                    <h2>INFOCAL</h2>
+                    <span>Santa Cruz</span>
+                </div>
+            </div>
+
+            <ul class="nav-links">
+                <li class="nav-item">
+                    <a class="nav-link active" onclick="showSection('dashboard')">
+                        <i class="ph ph-squares-four"></i> Dashboard
+                    </a>
+                </li>
+                
+                <!-- Visible para todos menos Alumno (opcional, o lectura para Alumno) -->
+                <li class="nav-item role-view role-revisor role-admin">
+                    <a class="nav-link" onclick="showSection('registro')">
+                        <i class="ph ph-users"></i> Registro Estudiantes
+                    </a>
+                </li>
+                
+                <li class="nav-item role-view role-revisor role-admin">
+                    <a class="nav-link" onclick="showSection('seguimiento')">
+                        <i class="ph ph-list-checks"></i> Seguimiento
+                    </a>
+                </li>
+                
+                <li class="nav-item role-view role-revisor role-admin">
+                    <a class="nav-link" onclick="showSection('notas')">
+                        <i class="ph ph-exam"></i> Calificaciones
+                    </a>
+                </li>
+
+                <!-- SOLO ADMIN -->
+                <li class="nav-item admin-only">
+                    <a class="nav-link" onclick="showSection('usuarios')">
+                        <i class="ph ph-user-gear"></i> Gestión Usuarios
+                    </a>
+                </li>
+            </ul>
+
+            <div class="user-info-section">
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                    <i class="ph ph-user-circle" style="font-size: 1.5rem;"></i>
+                    <div>
+                        <div id="current-user-name" style="font-weight: 600; font-size: 0.9rem;">Usuario</div>
+                        <div id="current-user-role" class="user-role-badge">Rol</div>
+                    </div>
+                </div>
+                <button class="btn-danger btn-sm" onclick="handleLogout()" style="width: 100%; justify-content: center; font-size: 0.8rem;">
+                    <i class="ph ph-sign-out"></i> Cerrar Sesión
+                </button>
+            </div>
+        </nav>
+
+        <!-- Contenido Principal -->
+        <main class="main-content">
+            <header>
+                <button class="btn-secondary mobile-menu-btn" style="display:none;" onclick="toggleSidebar()">
+                    <i class="ph ph-list"></i>
+                </button>
+                <h1 id="page-title">Dashboard General</h1>
+            </header>
+
+            <!-- SECCIÓN: DASHBOARD -->
+            <section id="dashboard" class="section active">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: #eff6ff; color: var(--primary);">
+                            <i class="ph ph-users"></i>
+                        </div>
+                        <div>
+                            <h3 id="stat-total-students">0</h3>
+                            <p class="text-muted">Estudiantes</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: #fff7ed; color: var(--warning);">
+                            <i class="ph ph-hourglass"></i>
+                        </div>
+                        <div>
+                            <h3 id="stat-pending">0</h3>
+                            <p class="text-muted">En Proceso</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: #f0fdf4; color: var(--success);">
+                            <i class="ph ph-check-circle"></i>
+                        </div>
+                        <div>
+                            <h3 id="stat-completed">0</h3>
+                            <p class="text-muted">Finalizados</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 id="dashboard-title">Estudiantes Recientes</h3>
+                    <div class="table-container">
+                        <table id="dashboard-table">
+                            <thead>
+                                <tr>
+                                    <th>Nombre</th>
+                                    <th>Tema de Tesis</th>
+                                    <th>Tipo Proyecto</th>
+                                    <th>Nota Final</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Filled by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECCIÓN: REGISTRO ESTUDIANTES -->
+            <section id="registro" class="section">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Directorio de Estudiantes</h3>
+                        <button class="btn-primary admin-only" onclick="openStudentModal()">
+                            <i class="ph ph-plus-circle"></i> Nuevo Estudiante
+                        </button>
+                    </div>
+                    <div class="table-container">
+                        <table id="registry-table">
+                            <thead>
+                                <tr>
+                                    <th>Código</th>
+                                    <th>Nombre</th>
+                                    <th>Tipo Proyecto</th>
+                                    <th>Tutor</th>
+                                    <th class="admin-only">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- JS Render -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECCIÓN: GESTIÓN DE USUARIOS (SOLO ADMIN) -->
+            <section id="usuarios" class="section">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Gestión de Usuarios del Sistema</h3>
+                        <button class="btn-primary" onclick="openUserModal()">
+                            <i class="ph ph-user-plus"></i> Nuevo Usuario
+                        </button>
+                    </div>
+                    <div class="table-container">
+                        <table id="users-table">
+                            <thead>
+                                <tr>
+                                    <th>Usuario</th>
+                                    <th>Nombre Completo</th>
+                                    <th>Rol</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- JS Render -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECCIÓN: SEGUIMIENTO -->
+            <section id="seguimiento" class="section">
+                <div class="card">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
+                        <h3>Listado de Seguimiento</h3>
+                        <input type="text" id="search-tracker" placeholder="Buscar estudiante..." style="width: 250px;" onkeyup="renderTrackingList()">
+                    </div>
+                    <div class="table-container">
+                        <table id="tracking-table">
+                            <thead>
+                                <tr>
+                                    <th>Estudiante</th>
+                                    <th>Tema</th>
+                                    <th>Tipo</th>
+                                    <th>Estado</th>
+                                    <th class="role-view role-revisor role-admin">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- JS Render -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECCIÓN: NOTAS -->
+            <section id="notas" class="section">
+                <div class="card">
+                    <h3>Gestión de Calificaciones por Capítulos</h3>
+                    <p style="color: var(--text-light); margin-bottom: 1rem;">Evalúe cada etapa del trabajo de grado y asigne la fecha de vencimiento correspondiente.</p>
+                    <div class="table-container">
+                        <table id="grades-table">
+                            <thead>
+                                <tr>
+                                    <th>Estudiante</th>
+                                    <th>Progreso de Entregas</th>
+                                    <th>Promedio Actual</th>
+                                    <th class="role-view role-revisor role-admin">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- JS Render -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Area de Impresión -->
+            <div id="print-area">
+                <div class="report-header">
+                    <img src="https://z-cdn-media.chatglm.cn/files/c9dda60d-ebbc-4480-8975-626f91b2ec4e.png?auth_key=1881490887-54925998dc654c3291debbf51122a335-0-2577184c1e385f19566fb84d8ba044e3" alt="Logo INFOCAL">
+                    <h1>INFORME DE CALIFICACIONES Y AVANCE</h1>
+                    <h2>Trabajo de Grado</h2>
+                    <p id="print-date">Fecha: 01/01/2023</p>
+                </div>
+                <div class="report-student-info">
+                    <div><strong>Estudiante:</strong> <span id="print-name"></span></div>
+                    <div><strong>Código:</strong> <span id="print-code"></span></div>
+                    <div><strong>Tutor:</strong> <span id="print-tutor"></span></div>
+                    <div><strong>Tema:</strong> <span id="print-title"></span></div>
+                </div>
+                <h3>Detalle por Etapas / Capítulos</h3>
+                <table class="report-detail-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 40%">Etapa / Capítulo</th>
+                            <th>Nota (0-100)</th>
+                            <th>Fecha Vencimiento</th>
+                        </tr>
+                    </thead>
+                    <tbody id="print-grades-body">
+                        <!-- JS Generated Rows -->
+                    </tbody>
+                </table>
+                <div class="report-summary">
+                    NOTA FINAL PROMEDIO: <span id="print-final" style="margin-left: 10px;"></span>
+                </div>
+                <div class="report-signatures">
+                    <div><div class="signature-line">Estudiante</div></div>
+                    <div><div class="signature-line">Tutor / Jurado</div></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- MODAL: USUARIO (LOGIN/CREACION) -->
+    <div class="modal-overlay" id="modal-user">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="user-modal-title">Registrar Usuario</h3>
+                <button class="close-modal" onclick="closeModal('modal-user')">&times;</button>
+            </div>
+            <form id="form-user" onsubmit="handleSaveUser(event)">
+                <input type="hidden" id="user-id">
+                <div class="form-group">
+                    <label>Usuario (Login)</label>
+                    <input type="text" id="user-username" required placeholder="Ej. alumno1">
+                </div>
+                <div class="form-group">
+                    <label>Contraseña</label>
+                    <input type="text" id="user-password" required placeholder="••••">
+                </div>
+                <div class="form-group">
+                    <label>Nombre Completo</label>
+                    <input type="text" id="user-fullname" required placeholder="Nombre Real">
+                </div>
+                <div class="form-group">
+                    <label>Rol</label>
+                    <select id="user-role" required>
+                        <option value="admin">Administrador</option>
+                        <option value="revisor">Revisor</option>
+                        <option value="alumno">Alumno</option>
+                    </select>
+                </div>
+                <!-- Si es alumno, vincular a estudiante -->
+                <div class="form-group" id="link-student-group" style="display:none;">
+                    <label>Vincular a Estudiante (Académico)</label>
+                    <select id="user-linked-student">
+                        <option value="">-- Seleccionar --</option>
+                        <!-- JS Populate -->
+                    </select>
+                    <small style="color: var(--text-light);">Necesario para que el alumno vea sus notas.</small>
+                </div>
+                <button type="submit" class="btn-primary" style="width: 100%;">Guardar Usuario</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: AGREGAR/EDITAR ESTUDIANTE -->
+    <div class="modal-overlay" id="modal-student">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="student-modal-title">Registrar Estudiante</h3>
+                <button class="close-modal" onclick="closeModal('modal-student')">&times;</button>
+            </div>
+            <form id="form-student" onsubmit="handleSaveStudent(event)">
+                <input type="hidden" id="student-id">
+                <div class="form-group"><label>Nombre Completo</label><input type="text" id="reg-name" required></div>
+                <div class="form-group"><label>Código / Carné</label><input type="text" id="reg-code" required></div>
+                <div class="form-group">
+                    <label>Tipo de Proyecto</label>
+                    <select id="reg-type" required>
+                        <option value="grado">Proyecto de Grado</option>
+                        <option value="emprendimiento">Emprendimiento Productivo</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>Título del Trabajo</label><input type="text" id="reg-title" required></div>
+                <div class="form-group"><label>Tutor Asignado</label><input type="text" id="reg-tutor" required></div>
+                <button type="submit" class="btn-primary" style="width: 100%;">Guardar Registro</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: SEGUIMIENTO -->
+    <div class="modal-overlay" id="modal-tracking">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Control de Seguimiento</h3>
+                <button class="close-modal" onclick="closeModal('modal-tracking')">&times;</button>
+            </div>
+            <div style="margin-bottom: 1rem;">
+                <p><strong>Estudiante:</strong> <span id="track-student-name"></span></p>
+                <p><strong>Tipo:</strong> <span id="track-project-type"></span></p>
+            </div>
+            <div class="form-group">
+                <label>Estructura / Checklist</label>
+                <div id="track-checklist" class="checklist-container"></div>
+            </div>
+            <form onsubmit="handleAddTracking(event)">
+                <input type="hidden" id="track-student-id">
+                <div class="form-group"><label>Estado</label>
+                    <select id="track-status"><option value="En Proceso">En Proceso</option><option value="Pendiente Revisión">Pendiente Revisión</option><option value="Finalizado">Finalizado</option></select>
+                </div>
+                <div class="form-group"><label>Comentario</label><textarea id="track-note" rows="3" required></textarea></div>
+                <button type="submit" class="btn-primary" style="width: 100%;">Guardar Avance</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: NOTAS -->
+    <div class="modal-overlay" id="modal-grades">
+        <div class="modal large">
+            <div class="modal-header">
+                <h3>Registrar Calificaciones</h3>
+                <button class="close-modal" onclick="closeModal('modal-grades')">&times;</button>
+            </div>
+            <div style="margin-bottom: 1.5rem;"><p><strong>Estudiante:</strong> <span id="grade-student-name"></span></p></div>
+            <form onsubmit="handleSaveGrades(event)">
+                <input type="hidden" id="grade-student-id">
+                <div class="grades-grid" style="font-weight:bold; color:var(--text-light); font-size:0.85rem;">
+                    <div>Etapa</div><div>Nota</div><div>Fecha</div>
+                </div>
+                <div id="grades-form-container"></div>
+                <div style="background: var(--bg-light); padding: 1rem; border-radius: var(--border-radius); margin-top: 1rem; text-align: center;">
+                    <strong>PROMEDIO: <span id="grade-preview" style="font-size: 1.2rem; color: var(--primary);">0.0</span></strong>
+                </div>
+                <button type="submit" class="btn-primary" style="width: 100%; margin-top: 1.5rem;">Guardar Notas</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toasts -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <script>
+        // --- DATOS DE SISTEMA ---
+        const STAGES = [
+            { key: 'perfil', label: 'Perfil' },
+            { key: 'cap1', label: 'Cap. I: Planteamiento' },
+            { key: 'cap2', label: 'Cap. II: Marco Teórico' },
+            { key: 'cap3', label: 'Cap. III: Propuesta' },
+            { key: 'cap4', label: 'Cap. IV: Conclusiones' },
+            { key: 'biblio', label: 'Bibliografía' },
+            { key: 'anexos', label: 'Anexos' }
+        ];
+
+        const TRACKING_CHECKLISTS = {
+            grado: ["1. Introducción", "1.1. Planteamiento Problema Técnico", "2. Objetivos", "3. Enfoque Metodológico", "4. Bibliografía", "5. Anexos"],
+            emprendimiento: ["1. Autoevaluación", "2. Evaluación Contexto", "3. Objetivo Emprendimiento", "4. Idea Negocio", "5. Formas Legales", "6. Bibliografía", "7. Anexos"]
+        };
+
+        // --- ESTADO DE LA APLICACIÓN ---
+        let students = [
+            { id: 1, name: "Ana Gómez", code: "2021-001", title: "IA en Medicina", tutor: "Dr. Díaz", projectType: "grado", status: "En Proceso", grades: { perfil:{score:85,date:''}, cap1:{score:0,date:''}, cap2:{score:0,date:''}, cap3:{score:0,date:''}, cap4:{score:0,date:''}, biblio:{score:0,date:''}, anexos:{score:0,date:''} } },
+            { id: 2, name: "Carlos Ruiz", code: "2021-045", title: "Café Orgánico", tutor: "Ing. López", projectType: "emprendimiento", status: "Finalizado", grades: { perfil:{score:90,date:''}, cap1:{score:95,date:''}, cap2:{score:88,date:''}, cap3:{score:92,date:''}, cap4:{score:94,date:''}, biblio:{score:100,date:''}, anexos:{score:95,date:''} } }
+        ];
+
+        let users = [
+            { id: 1, username: 'admin', password: 'ariel%10', role: 'admin', name: 'Administrador', linkedStudentId: null },
+            { id: 2, username: 'revisor1', password: '123', role: 'revisor', name: 'Juan Revisor', linkedStudentId: null },
+            { id: 3, username: 'ana', password: '123', role: 'alumno', name: 'Ana Gómez', linkedStudentId: 1 } // Ana es alumna
+        ];
+
+        let currentUser = null;
+
+        // --- AUTENTICACIÓN ---
+        function handleLogin(e) {
+            e.preventDefault();
+            const u = document.getElementById('login-user').value;
+            const p = document.getElementById('login-pass').value;
+
+            const user = users.find(usr => usr.username === u && usr.password === p);
+
+            if (user) {
+                currentUser = user;
+                localStorage.setItem('currentUser', JSON.stringify(user));
+                initApp();
+            } else {
+                showToast("Usuario o contraseña incorrectos", "error");
+            }
+        }
+
+        function handleLogout() {
+            currentUser = null;
+            localStorage.removeItem('currentUser');
+            document.getElementById('app-container').style.display = 'none';
+            document.getElementById('login-screen').style.display = 'flex';
+            document.getElementById('login-user').value = '';
+            document.getElementById('login-pass').value = '';
+        }
+
+        function initApp() {
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('app-container').style.display = 'block';
+            
+            // Set User Info
+            document.getElementById('current-user-name').textContent = currentUser.name;
+            document.getElementById('current-user-role').textContent = currentUser.role;
+
+            renderPermissions();
+            showSection('dashboard');
+        }
+
+        function renderPermissions() {
+            // Ocultar todo por defecto
+            document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.role-revisor').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.role-view').forEach(el => el.style.display = 'none'); // Elementos visibles para roles superiores
+
+            // Mostrar según rol
+            if (currentUser.role === 'admin') {
+                document.querySelectorAll('.admin-only').forEach(el => el.style.display = '');
+                document.querySelectorAll('.role-revisor').forEach(el => el.style.display = '');
+                document.querySelectorAll('.role-view').forEach(el => el.style.display = '');
+                document.getElementById('dashboard-title').textContent = "Panel Administrativo";
+            } else if (currentUser.role === 'revisor') {
+                document.querySelectorAll('.role-revisor').forEach(el => el.style.display = '');
+                document.querySelectorAll('.role-view').forEach(el => el.style.display = '');
+                document.getElementById('dashboard-title').textContent = "Panel de Revisión";
+            } else if (currentUser.role === 'alumno') {
+                document.getElementById('dashboard-title').textContent = "Mi Progreso Académico";
+            }
+        }
+
+        // --- NAVEGACIÓN ---
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
+            document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+            document.getElementById(sectionId).classList.add('active');
+            
+            const titles = {
+                'dashboard': 'Dashboard', 'registro': 'Registro Estudiantes', 'seguimiento': 'Seguimiento', 'notas': 'Calificaciones', 'usuarios': 'Gestión Usuarios'
+            };
+            if(sectionId !== 'dashboard') document.getElementById('page-title').textContent = titles[sectionId];
+            
+            document.getElementById('sidebar').classList.remove('active');
+
+            if(sectionId === 'dashboard') updateDashboard();
+            if(sectionId === 'registro') renderRegistryList();
+            if(sectionId === 'usuarios') renderUsersList();
+            if(sectionId === 'seguimiento') renderTrackingList();
+            if(sectionId === 'notas') renderGradesList();
+        }
+
+        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); }
+
+        // --- GESTIÓN DE USUARIOS ---
+        function renderUsersList() {
+            const tbody = document.querySelector('#users-table tbody');
+            tbody.innerHTML = '';
+            users.forEach(u => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>${u.username}</strong></td>
+                    <td>${u.name}</td>
+                    <td><span class="status-badge ${u.role === 'admin' ? 'status-active' : (u.role==='alumno'?'status-completed':'status-pending')}">${u.role}</span></td>
+                    <td>
+                        <button class="btn-secondary btn-sm" onclick="openUserModal(${u.id})"><i class="ph ph-pencil"></i></button>
+                        ${u.id !== 1 ? `<button class="btn-danger btn-sm" onclick="deleteUser(${u.id})"><i class="ph ph-trash"></i></button>` : ''}
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function openUserModal(id = null) {
+            const modal = document.getElementById('modal-user');
+            document.getElementById('form-user').reset();
+            document.getElementById('user-id').value = '';
+            document.getElementById('link-student-group').style.display = 'none';
+
+            // Llenar select de estudiantes
+            const select = document.getElementById('user-linked-student');
+            select.innerHTML = '<option value="">-- Ninguno / Nuevo Estudiante --</option>';
+            students.forEach(s => {
+                select.innerHTML += `<option value="${s.id}">${s.name} (${s.code})</option>`;
+            });
+
+            if (id) {
+                const u = users.find(x => x.id === id);
+                if(u) {
+                    document.getElementById('user-modal-title').textContent = "Editar Usuario";
+                    document.getElementById('user-id').value = u.id;
+                    document.getElementById('user-username').value = u.username;
+                    document.getElementById('user-password').value = u.password;
+                    document.getElementById('user-fullname').value = u.name;
+                    document.getElementById('user-role').value = u.role;
+                    if(u.role === 'alumno') {
+                        document.getElementById('link-student-group').style.display = 'block';
+                        document.getElementById('user-linked-student').value = u.linkedStudentId || '';
+                    }
+                }
+            } else {
+                document.getElementById('user-modal-title').textContent = "Registrar Usuario";
+            }
+            modal.classList.add('open');
+        }
+
+        function handleSaveUser(e) {
+            e.preventDefault();
+            const id = document.getElementById('user-id').value;
+            const username = document.getElementById('user-username').value;
+            const password = document.getElementById('user-password').value;
+            const name = document.getElementById('user-fullname').value;
+            const role = document.getElementById('user-role').value;
+            const linkedStudentId = document.getElementById('user-linked-student').value;
+
+            const userData = { username, password, name, role, linkedStudentId: linkedStudentId ? parseInt(linkedStudentId) : null };
+
+            if (id) {
+                const idx = users.findIndex(u => u.id == id);
+                userData.id = parseInt(id);
+                users[idx] = userData;
+                showToast("Usuario actualizado");
+            } else {
+                userData.id = Date.now();
+                users.push(userData);
+                showToast("Usuario creado");
+            }
+            closeModal('modal-user');
+            renderUsersList();
+        }
+
+        function deleteUser(id) {
+            if(confirm("¿Eliminar usuario?")) {
+                users = users.filter(u => u.id !== id);
+                renderUsersList();
+            }
+        }
+
+        // --- LÓGICA ESTUDIANTES (Filtrada por rol Alumno) ---
+        function getVisibleStudents() {
+            if (currentUser.role === 'alumno' && currentUser.linkedStudentId) {
+                return students.filter(s => s.id === currentUser.linkedStudentId);
+            }
+            return students;
+        }
+
+        function updateDashboard() {
+            const visible = getVisibleStudents();
+            document.getElementById('stat-total-students').textContent = visible.length;
+            document.getElementById('stat-pending').textContent = visible.filter(s => s.status === "En Proceso").length;
+            document.getElementById('stat-completed').textContent = visible.filter(s => s.status === "Finalizado").length;
+
+            const tbody = document.querySelector('#dashboard-table tbody');
+            tbody.innerHTML = '';
+            visible.forEach(s => {
+                const final = calculateFinal(s.grades);
+                const typeBadge = s.projectType === 'emprendimiento' ? '<span class="status-badge status-completed">Emp.</span>' : '<span class="status-badge status-active">Grado</span>';
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td>${s.name}</td><td>${s.title}</td><td>${typeBadge}</td><td>${final > 0 ? final.toFixed(1) : '-'}</td>`;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function renderRegistryList() {
+            const tbody = document.querySelector('#registry-table tbody');
+            tbody.innerHTML = '';
+            const visible = getVisibleStudents();
+            visible.forEach(s => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${s.code}</td><td>${s.name}</td><td>${s.projectType}</td><td>${s.tutor}</td>
+                    <td class="admin-only">
+                        <button class="btn-secondary btn-sm" onclick="openStudentModal(${s.id})"><i class="ph ph-pencil-simple"></i></button>
+                        <button class="btn-danger btn-sm" onclick="deleteStudent(${s.id})"><i class="ph ph-trash"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+            // Si es alumno, ocultar cabecera de acciones
+            if(currentUser.role === 'alumno') {
+                document.querySelector('#registry-table th:last-child').style.display = 'none';
+            } else {
+                document.querySelector('#registry-table th:last-child').style.display = '';
+            }
+        }
+
+        function openStudentModal(id = null) {
+            const modal = document.getElementById('modal-student');
+            document.getElementById('form-student').reset();
+            document.getElementById('student-id').value = '';
+            if (id) {
+                const s = students.find(x => x.id === id);
+                if(s) {
+                    document.getElementById('student-modal-title').textContent = "Editar Estudiante";
+                    document.getElementById('student-id').value = s.id;
+                    document.getElementById('reg-name').value = s.name;
+                    document.getElementById('reg-code').value = s.code;
+                    document.getElementById('reg-type').value = s.projectType;
+                    document.getElementById('reg-title').value = s.title;
+                    document.getElementById('reg-tutor').value = s.tutor;
+                }
+            } else { document.getElementById('student-modal-title').textContent = "Registrar Estudiante"; }
+            modal.classList.add('open');
+        }
+
+        function handleSaveStudent(e) {
+            e.preventDefault();
+            const id = document.getElementById('student-id').value;
+            const data = {
+                id: id ? parseInt(id) : Date.now(),
+                name: document.getElementById('reg-name').value,
+                code: document.getElementById('reg-code').value,
+                projectType: document.getElementById('reg-type').value,
+                title: document.getElementById('reg-title').value,
+                tutor: document.getElementById('reg-tutor').value,
+                status: "En Proceso",
+                grades: { perfil:{score:0,date:''}, cap1:{score:0,date:''}, cap2:{score:0,date:''}, cap3:{score:0,date:''}, cap4:{score:0,date:''}, biblio:{score:0,date:''}, anexos:{score:0,date:''} }
+            };
+
+            if (id) {
+                const idx = students.findIndex(s => s.id == id);
+                data.grades = students[idx].grades; // Mantener notas
+                data.status = students[idx].status;
+                students[idx] = data;
+                showToast("Estudiante actualizado");
+            } else {
+                students.push(data);
+                showToast("Estudiante registrado");
+            }
+            closeModal('modal-student');
+            renderRegistryList();
+            updateDashboard();
+        }
+
+        function deleteStudent(id) {
+            if(confirm("¿Eliminar?")) {
+                students = students.filter(s => s.id !== id);
+                renderRegistryList();
+                updateDashboard();
+            }
+        }
+
+        // --- SEGUIMIENTO ---
+        function renderTrackingList() {
+            const search = document.getElementById('search-tracker').value.toLowerCase();
+            const tbody = document.querySelector('#tracking-table tbody');
+            tbody.innerHTML = '';
+            const visible = getVisibleStudents().filter(s => s.name.toLowerCase().includes(search));
+            
+            visible.forEach(s => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${s.name}</td><td>${s.title}</td><td>${s.projectType}</td>
+                    <td><span class="status-badge ${getStatusClass(s.status)}">${s.status}</span></td>
+                    <td class="role-view role-revisor role-admin">
+                        <button class="btn-secondary btn-sm" onclick="openTrackingModal(${s.id})">Gestionar</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function openTrackingModal(id) {
+            const student = students.find(s => s.id === id);
+            document.getElementById('track-student-name').textContent = student.name;
+            document.getElementById('track-student-id').value = id;
+            document.getElementById('track-status').value = student.status;
+            document.getElementById('track-project-type').textContent = student.projectType === 'grado' ? 'Proyecto Grado' : 'Emprendimiento';
+            
+            const list = document.getElementById('track-checklist');
+            list.innerHTML = '';
+            TRACKING_CHECKLISTS[student.projectType].forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'checklist-item';
+                div.innerHTML = `<input type="checkbox" id="chk_${item}"> <label class="checklist-label">${item}</label>`;
+                list.appendChild(div);
+            });
+            document.getElementById('modal-tracking').classList.add('open');
+        }
+
+        function handleAddTracking(e) {
+            e.preventDefault();
+            const id = parseInt(document.getElementById('track-student-id').value);
+            const student = students.find(s => s.id === id);
+            student.status = document.getElementById('track-status').value;
+            showToast("Seguimiento actualizado");
+            closeModal('modal-tracking');
+            renderTrackingList();
+        }
+
+        // --- NOTAS ---
+        function calculateFinal(g) {
+            let t = 0;
+            for(let k in g) t += parseFloat(g[k].score) || 0;
+            return t / STAGES.length;
+        }
+
+        function renderGradesList() {
+            const tbody = document.querySelector('#grades-table tbody');
+            tbody.innerHTML = '';
+            const visible = getVisibleStudents();
+            visible.forEach(s => {
+                const final = calculateFinal(s.grades);
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>${s.name}</strong><br><small>${s.title}</small></td>
+                    <td>Ver detalles</td>
+                    <td><strong>${final > 0 ? final.toFixed(2) : '0.0'}</strong></td>
+                    <td class="role-view role-revisor role-admin">
+                        <button class="btn-primary btn-sm" onclick="openGradesModal(${s.id})">Calificar</button>
+                        <button class="btn-secondary btn-sm no-print" onclick="printReport(${s.id})">PDF</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function openGradesModal(id) {
+            const student = students.find(s => s.id === id);
+            document.getElementById('grade-student-name').textContent = student.name;
+            document.getElementById('grade-student-id').value = id;
+            const c = document.getElementById('grades-form-container');
+            c.innerHTML = '';
+            STAGES.forEach(stage => {
+                const row = document.createElement('div');
+                row.className = 'grades-grid';
+                row.innerHTML = `
+                    <div>${stage.label}</div>
+                    <div><input type="number" class="grade-input" data-key="${stage.key}" value="${student.grades[stage.key].score || ''}" min="0" max="100"></div>
+                    <div><input type="date" class="date-input" data-key="${stage.key}" value="${student.grades[stage.key].date || ''}"></div>
+                `;
+                c.appendChild(row);
+            });
+            document.querySelectorAll('.grade-input').forEach(i => i.addEventListener('input', updateGradePreview));
+            updateGradePreview();
+            document.getElementById('modal-grades').classList.add('open');
+        }
+
+        function updateGradePreview() {
+            const inputs = document.querySelectorAll('.grade-input');
+            let t = 0;
+            inputs.forEach(i => t += parseFloat(i.value) || 0);
+            document.getElementById('grade-preview').textContent = (t / STAGES.length).toFixed(2);
+        }
+
+        function handleSaveGrades(e) {
+            e.preventDefault();
+            const id = parseInt(document.getElementById('grade-student-id').value);
+            const student = students.find(s => s.id === id);
+            STAGES.forEach(stage => {
+                student.grades[stage.key].score = parseFloat(document.querySelector(`.grade-input[data-key="${stage.key}"]`).value) || 0;
+                student.grades[stage.key].date = document.querySelector(`.date-input[data-key="${stage.key}"]`).value;
+            });
+            showToast("Notas guardadas");
+            closeModal('modal-grades');
+            renderGradesList();
+            updateDashboard();
+        }
+
+        // --- IMPRESIÓN ---
+        function printReport(id) {
+            const student = students.find(s => s.id === id);
+            document.getElementById('print-name').textContent = student.name;
+            document.getElementById('print-code').textContent = student.code;
+            document.getElementById('print-tutor').textContent = student.tutor;
+            document.getElementById('print-title').textContent = student.title;
+            document.getElementById('print-date').textContent = `Fecha: ${new Date().toLocaleDateString()}`;
+            
+            const tbody = document.getElementById('print-grades-body');
+            tbody.innerHTML = '';
+            STAGES.forEach(stage => {
+                const s = student.grades[stage.key];
+                tbody.innerHTML += `<tr><td>${stage.label}</td><td>${s.score || '-'}</td><td>${s.date || '-'}</td></tr>`;
+            });
+            document.getElementById('print-final').textContent = calculateFinal(student.grades).toFixed(2);
+            window.print();
+        }
+
+        // --- UTILS ---
+        function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+        function getStatusClass(s) { return s==='Finalizado'?'status-completed':'status-active'; }
+        function showToast(m, t='success') {
+            const c = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${t}`;
+            toast.innerHTML = `<span>${m}</span>`;
+            c.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        // --- CHECK SESSION ON LOAD ---
+        window.onload = function() {
+            const stored = localStorage.getItem('currentUser');
+            if (stored) {
+                currentUser = JSON.parse(stored);
+                // Verificar si el usuario sigue existiendo en la lista 'users' simulada
+                const valid = users.find(u => u.username === currentUser.username && u.password === currentUser.password);
+                if (valid) {
+                    initApp();
+                } else {
+                    localStorage.removeItem('currentUser');
+                }
+            }
+        }
+    </script>
+</body>
+</html>
